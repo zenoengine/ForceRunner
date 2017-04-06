@@ -15,7 +15,7 @@ public class BlockCreator : MonoBehaviour {
         .GetComponent<MapCreator>();
     }
     
-    public void createBlock(Vector3 block_position)
+    public void CreateBlock(Vector3 block_position)
     {
         // 만들어야 할 블록의 종류(흰색인가 빨간색인가)를 구한다
         int next_block_type = this.block_count % this.blockPrefabs.Length; // % : 나머지를 구하는 연산자
@@ -25,7 +25,7 @@ public class BlockCreator : MonoBehaviour {
         this.block_count++; // 블록의 개수를 증가
     }
 
-    public void createSpineBlock(Vector3 block_position)
+    public void CreateSpineBlock(Vector3 block_position)
     {
         // 만들어야 할 블록의 종류(흰색인가 빨간색인가)를 구한다
         int next_block_type = this.block_count % this.spineBlocksPrefabs.Length; // % : 나머지를 구하는 연산자

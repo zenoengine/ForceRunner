@@ -6,7 +6,7 @@ public class PlayerControl : MonoBehaviour
     public static float ACCELERATION = 10.0f; // 가속도
     public static float SPEED_MIN = 4.0f; // 속도의 최솟값
     public static float SPEED_MAX = 8.0f; // 속도의 최댓값
-    public static float JUMP_HEIGHT_MAX = 3.0f; // 점프 높이
+    public static float JUMP_HEIGHT_MAX = 5.0f; // 점프 높이
     public static float JUMP_KEY_RELEASE_REDUCE = 0.5f; // 점프 후의 감속도
     public static float NARAKU_HEIGHT = -5.0f;
 

@@ -10,11 +10,11 @@ public class SpineFloor : MonoBehaviour
         SFM_DOWN
     }
 
-    float MAX_Y_HEIGHT = 4;
-    float MIN_Y_HEIGHT = -3;
+    float MAX_Y_HEIGHT = 1.5f;
+    float MIN_Y_HEIGHT = -2;
     SpineFloorMovement movementState = SpineFloorMovement.SFM_UP;
     Vector3 direction;
-    float speed = 1;
+    float speed = 5;
     // Use this for initialization
     void Start()
     {

@@ -10,7 +10,7 @@ public class ItemControl : MonoBehaviour {
     }
     void Update()
     {
-        if (this.map_creator.isDelete(this.gameObject))
+        if (this.map_creator.is_delete(this.gameObject))
         {
             GameObject.Destroy(this.gameObject);
         }

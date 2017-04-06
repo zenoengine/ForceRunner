@@ -13,12 +13,19 @@ public class Block
         NUM, // 블록이 몇 종류인지 나타낸다(＝2).
     };
 };
-public enum ItemType
+public enum ItemBlockType
 {
     Force,
     Coin,
-    Bomb
+    Space,
 };
+
+public enum MonsterType
+{
+    None,
+    Gumba,
+}
+
 
 public class MapCreator : MonoBehaviour
 {
@@ -42,11 +49,11 @@ public class MapCreator : MonoBehaviour
     }
 
     private Item last_item;
-
     private FloorBlock last_block;
     private PlayerControl player = null;
     private BlockCreator block_creator = null;
     private ItemCreator item_creator = null;
+    private MonsterCreator monster_creator = null;
     private LevelControl level_control = null;
 
     void Start()
@@ -55,6 +62,7 @@ public class MapCreator : MonoBehaviour
         last_block.is_created = false;
         block_creator = GetComponent<BlockCreator>();
         item_creator = GetComponent<ItemCreator>();
+        monster_creator = GetComponent<MonsterCreator>();
         game_root = GetComponent<GameRoot>();
 
         level_control = new LevelControl();
@@ -64,41 +72,74 @@ public class MapCreator : MonoBehaviour
 
     void Update()
     {
-        float block_generate_x = this.player.transform.position.x;
-        block_generate_x += BLOCK_WIDTH * ((float)BLOCK_NUM_IN_SCREEN + 1) / 2.0f;
-        while (this.last_block.position.x < block_generate_x)
-        {
-            createMap();
-        }
+        createMap();
     }
 
     private void createMap()
     {
-        creare_blocks();
-        create_coins();
+
+        float block_generate_x = this.player.transform.position.x;
+        block_generate_x += BLOCK_WIDTH * ((float)BLOCK_NUM_IN_SCREEN + 1) / 2.0f;
+
+        while (this.last_block.position.x < block_generate_x)
+        {
+            level_control.update(this.game_root.getPlayTime());
+
+            creare_blocks();
+
+            if (level_control.current_block.block_type == Block.TYPE.FLOOR)
+            {
+                level_control.update(this.game_root.getPlayTime());
+                create_monster();
+            }
+        }
+        while (this.last_item.position.x < block_generate_x)
+        {
+            level_control.update(this.game_root.getPlayTime());
+
+            create_item();
+        }
     }
-    
-    private void create_coins()
+
+    private void create_monster()
     {
+        LevelControl.CreationInfo current_block = this.level_control.current_block;
+        //HACK : Second line for monster proper position
+        if (level_control.current_monster.monster_type == MonsterType.Gumba &&
+            current_block.current_count >= current_block.max_sequnce_count * Random.Range(0.1f, 0.9f))
+        {
+            Vector3 monster_position = last_block.position + new Vector3(0, 1, 0);
+            monster_creator.createMonster(monster_position);
+            level_control.current_monster.current_count++;
+        }
+    }
+
+    private void create_item()
+    {
+
         Vector3 item_position;
         if (!this.last_item.is_created)
         {
             item_position = this.player.transform.position;
-            item_position.x -= BLOCK_WIDTH * ((float)BLOCK_NUM_IN_SCREEN / 2.0f);
-            item_position.y = 0.0f;
+            item_position.x += BLOCK_WIDTH * ((float)BLOCK_NUM_IN_SCREEN / 2.0f);
+            item_position.y = 3;
         }
         else
         {
             item_position = this.last_item.position;
         }
 
-        LevelControl.CreationInfo current = this.level_control.current_block;
-        if(current.block_type == Block.TYPE.HOLE)
+        item_position.y = level_control.current_block.height * BLOCK_HEIGHT + 3;
+        ItemBlockType currentType = level_control.current_item.item_type;
+        if (currentType != ItemBlockType.Space)
         {
-
+            item_creator.create_item(currentType, item_position);
+            last_item.is_created = true;
         }
 
-        //item_creator.createItem(ItemType.Coin, item_position + new Vector3(0, 2, 0));
+        level_control.current_item.current_count++;
+        item_position.x += BLOCK_WIDTH;
+        last_item.position = item_position;
     }
 
     private void creare_blocks()
@@ -115,40 +156,38 @@ public class MapCreator : MonoBehaviour
             block_position = this.last_block.position;
         }
 
-        this.level_control.update(this.game_root.getPlayTime());
-
-        // level_control에 저장된 current_block(지금 만들 블록 정보)의 height(높이)를 씬 상의 좌표로 변환.
+        
         block_position.y = level_control.current_block.height * BLOCK_HEIGHT;
-        // 지금 만들 블록에 관한 정보를 변수 current에 넣는다.
+        
         LevelControl.CreationInfo current = this.level_control.current_block;
-        // 지금 만들 블록이 바닥이면 (지금 만들 블록이 구멍이라면)
         
         if (current.block_type == Block.TYPE.FLOOR)
         {
             block_position.x += BLOCK_WIDTH;
-            block_creator.createBlock(block_position);
+            block_creator.CreateBlock(block_position);
         }
         else if(current.block_type == Block.TYPE.SPINE_FLOOR)
         {
-            block_position.x += SPINE_BLOCK_WIDTH;
-            block_creator.createSpineBlock(block_position);
+            block_position.x += SPINE_BLOCK_WIDTH - BLOCK_WIDTH*0.5f;
+            block_creator.CreateSpineBlock(block_position);
+            block_position.x += BLOCK_WIDTH * 0.5f;
         }
         else
         {
             block_position.x += BLOCK_WIDTH;
         }
-
+        level_control.current_block.current_count++;
         this.last_block.position = block_position;
         this.last_block.is_created = true;
     }
 
 
-    public bool isDelete(GameObject block_object)
+    public bool is_delete(GameObject game_object)
     {
         bool ret = false;
         float left_limit = this.player.transform.position.x - BLOCK_WIDTH * ((float)BLOCK_NUM_IN_SCREEN / 2.0f);
 
-        if (block_object.transform.position.x < left_limit)
+        if (game_object.transform.position.x < left_limit)
         {
             ret = true; // 반환값을 true(사라져도 좋다)로
         }

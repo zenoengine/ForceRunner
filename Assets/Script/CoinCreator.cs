@@ -15,8 +15,8 @@ public class CoinCreator : MonoBehaviour {
 
     public void createBlock(Vector3 block_position)
     {
-        int next_block_type = coin_count % coinPrefabs.Length; 
-        GameObject go = GameObject.Instantiate(coinPrefabs[next_block_type]) as GameObject;
+        int next_item_type = coin_count % coinPrefabs.Length; 
+        GameObject go = GameObject.Instantiate(coinPrefabs[next_item_type]) as GameObject;
         go.transform.position = block_position; 
         this.coin_count++; 
     }

@@ -7,7 +7,7 @@ public class ItemCreator : MonoBehaviour {
     [Serializable]
     public struct ItemPrefab
     {
-        public ItemType type;
+        public ItemBlockType type;
         public GameObject prefab;
     }
 
@@ -21,7 +21,7 @@ public class ItemCreator : MonoBehaviour {
         map_creator = GameObject.Find("GameRoot").GetComponent<MapCreator>();
     }
 
-    public void createItem(ItemType type, Vector3 item_position)
+    public void create_item(ItemBlockType type, Vector3 item_position)
     {
         GameObject prefab = null;
         if(FindPrefabFromType(type, out prefab))
@@ -31,7 +31,7 @@ public class ItemCreator : MonoBehaviour {
         }
     }
 
-    bool FindPrefabFromType(ItemType type, out GameObject prefab)
+    bool FindPrefabFromType(ItemBlockType type, out GameObject prefab)
     {
         prefab = null;
         foreach (var item in itemPrefabs)

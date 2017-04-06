@@ -16,6 +16,7 @@ public class LevelData
     public Range spine_count; // 가시의 개수 범위
     public Range height_diff; // 발판의 높이 범위
     public Range coin_count;
+    public int monster_spawn_rate;
     public LevelData()
     {
         this.end_time = 15.0f; // 종료 시간 초기화
@@ -24,8 +25,8 @@ public class LevelData
         this.floor_count.max = 10; // 발판 블록 수의 최댓값을 초기화
         this.hole_count.min = 2; // 구멍 개수의 최솟값을 초기화
         this.hole_count.max = 6; // 구멍 개수의 최댓값을 초기화
-        spine_count.min = 2;
-        spine_count.max = 6;
+        spine_count.min = 0;
+        spine_count.max = 0;
 
         this.height_diff.min = 0; // 발판 높이 변화의 최솟값을 초기화
         this.height_diff.max = 0; // 발판 높이 변화의 최댓값을 초기화
@@ -42,38 +43,145 @@ public class LevelControl
     public struct CreationInfo
     {
         public Block.TYPE block_type; // 블록의 종류.
-        public int max_count; // 블록의 최대 개수.
+        public int max_sequnce_count; // 블록의 최대 개수.
         public int height; // 블록을 배치할 높이.
         public int current_count; // 작성한 블록의 개수.
     };
 
-    public CreationInfo previous_block; // 이전에 어떤 블록을 만들었는가.
-    public CreationInfo current_block; // 지금 어떤 블록을 만들어야 하는가.
-    public CreationInfo next_block; // 다음에 어떤 블록을 만들어야 하는가.
-    public int block_count = 0; // 생성한 블록의 총 수.
-    public int level = 0; // 난이도.
+    public struct ItemInfo
+    {
+        public ItemBlockType item_type;
+        public int max_sequnce_count;
+        public int current_count;
+    };
+
+    public struct MonsterInfo
+    {
+        public MonsterType monster_type;
+        public int current_count;
+    }
+
+    public MonsterInfo current_monster;
+    public ItemInfo previous_item;
+    public ItemInfo current_item;
+    public ItemInfo next_item;
+
+    public CreationInfo previous_block;
+    public CreationInfo current_block;
+    public CreationInfo next_block;
+    public int block_count = 0;
+    public int level = 0;
 
     private void clear_next_block(ref CreationInfo block)
     {
         // 전달받은 블록(block)을 초기화.
         block.block_type = Block.TYPE.FLOOR;
-        block.max_count = 15;
+        block.max_sequnce_count = 15;
         block.height = 0;
         block.current_count = 0;
+
+        current_monster.monster_type = MonsterType.None;
+        current_monster.current_count = 0;
     }
-    // 프로필 노트를 초기화한다.
+
+    private void clear_item_info(ref ItemInfo item)
+    {
+        item.current_count = 0;
+        item.item_type = ItemBlockType.Space;
+        item.max_sequnce_count = 15;
+        item.current_count = 0;
+    }
+
     public void initialize()
     {
-        this.block_count = 0; // 블록의 총 수를 초기화.
-                              // 이전, 현재, 다음 블록을 각각.
-                              // clear_next_block()에 넘겨서 초기화한다.
-        this.clear_next_block(ref this.previous_block);
-        this.clear_next_block(ref this.current_block);
-        this.clear_next_block(ref this.next_block);
+        block_count = 0;
+        clear_next_block(ref previous_block);
+        clear_next_block(ref current_block);
+        clear_next_block(ref next_block);
+
+        clear_item_info(ref previous_item);
+        clear_item_info(ref current_item);
+        clear_item_info(ref next_item);
+    }
+
+    private void update_monster_info(LevelData level_data)
+    {
+        float randomNumber = Random.Range(0, 100);
+
+        current_monster.monster_type = MonsterType.Gumba;
+
+        if (randomNumber <= level_data.monster_spawn_rate)
+        {
+            current_monster.monster_type = MonsterType.Gumba;
+        }
+        else
+        {
+            current_monster.monster_type = MonsterType.None;
+        }
+    }
+
+    private void update_item_info(LevelData level_data)
+    {
+        switch (previous_item.item_type)
+        {
+            case ItemBlockType.Space: // 이전 블록이 바닥인 경우.
+                {
+                    next_item.item_type = ItemBlockType.Coin;
+                    next_item.max_sequnce_count = Random.Range(level_data.coin_count.min, level_data.coin_count.max); // 바닥 길이의 최솟값~최댓값 사이의 임의의 값.
+                }
+                break;
+            case ItemBlockType.Coin: // 이전 블록이 구멍인 경우.
+                {
+                    next_item.item_type = ItemBlockType.Space;
+                    next_item.max_sequnce_count = Random.Range(level_data.coin_count.min, level_data.coin_count.max); // 바닥 길이의 최솟값~최댓값 사이의 임의의 값.
+                }
+                break;
+        }
+    }
+
+    private void update_block_info(LevelData level_data)
+    {
+        switch (current_block.block_type)
+        {
+            case Block.TYPE.FLOOR: // 이전 블록이 바닥인 경우.
+                {
+                    //HACK : spine_floor is generated with 25% probability.
+                    int randomIdx = Random.Range(0, 6);
+                    switch (randomIdx)
+                    {
+                        case 1:
+                            next_block.block_type = Block.TYPE.SPINE_FLOOR;
+                            next_block.max_sequnce_count = Random.Range(level_data.spine_count.min, level_data.spine_count.max);
+                            break;
+                        default:
+                            next_block.block_type = Block.TYPE.HOLE;
+                            next_block.max_sequnce_count = Random.Range(level_data.hole_count.min, level_data.hole_count.max);
+                            break;
+                    }
+                    
+                    
+                    next_block.height = previous_block.height;                            
+                }
+                break;
+            case Block.TYPE.HOLE:
+            case Block.TYPE.SPINE_FLOOR:// 이전 블록이 구멍인 경우.
+                {
+                    next_block.block_type = Block.TYPE.FLOOR; // 이번엔 바닥을 만든다.
+                    next_block.max_sequnce_count = Random.Range(level_data.floor_count.min, level_data.floor_count.max); // 바닥 길이의 최솟값~최댓값 사이의 임의의 값.
+                                                                                                                      // 바닥 높이의 최솟값과 최댓값을 구한다.
+                    int height_min = previous_block.height + level_data.height_diff.min;
+                    int height_max = previous_block.height + level_data.height_diff.max;
+                    height_min = Mathf.Clamp(height_min, HEIGHT_MIN, HEIGHT_MAX);
+                    height_max = Mathf.Clamp(height_max, HEIGHT_MIN, HEIGHT_MAX);
+                    // 바닥 높이의 최솟값~최댓값 사이의 임의의 값.
+                    next_block.height = Random.Range(height_min, height_max);
+                }
+                break;
+        }
     }
 
     // LevelControl.cs
-    private void update_level(ref CreationInfo current, CreationInfo previous, float passage_time)
+    private void update_level(float passage_time)
     {
         // 새 인수 passage_time으로 플레이 경과 시간을 받는다.
         // 레벨 1~레벨 5를 반복한다.
@@ -90,67 +198,46 @@ public class LevelControl
 
         this.level = i;
 
-        current.block_type = Block.TYPE.FLOOR;
-        current.max_count = 1;
+        next_block.block_type = Block.TYPE.FLOOR;
+        next_block.max_sequnce_count = 1;
 
-        if (this.block_count >= 10)
+        if (block_count < 15)
         {
-            // 현재 레벨용 레벨 데이터를 가져온다.
-            LevelData level_data;
-            level_data = this.level_datas[this.level];
-            switch (previous.block_type)
-            {
-                case Block.TYPE.FLOOR: // 이전 블록이 바닥인 경우.
-                    {
-                        //HACK: 1/5의 확률로 가시 바닥 생성
-                        int randomIdx = Random.Range(0, 5);
-                        switch (randomIdx)
-                        {
-                            case 0:
-                                {
-                                    current.block_type = Block.TYPE.SPINE_FLOOR;
-                                    current.max_count = Random.Range(level_data.spine_count.min, level_data.spine_count.max);
-                                    current.height = previous.height;
-                                }
-                                break;
-                            default:
-                                {
-                                    current.block_type = Block.TYPE.HOLE; // 이번엔 구멍을 만든다.
-                                    current.max_count = Random.Range(level_data.hole_count.min, level_data.hole_count.max);// 구멍 크기의 최솟값~최댓값 사이의 임의의 값.
-                                    current.height = previous.height; // 높이를 이전과 같이 한다.
-                                }
-                                break;
-                        }
-                    }
-                    break;
-                case Block.TYPE.HOLE: // 이전 블록이 구멍인 경우.
-                    {
-                        current.block_type = Block.TYPE.FLOOR; // 이번엔 바닥을 만든다.
-                        current.max_count = Random.Range(level_data.floor_count.min, level_data.floor_count.max); // 바닥 길이의 최솟값~최댓값 사이의 임의의 값.
-                        // 바닥 높이의 최솟값과 최댓값을 구한다.
-                        int height_min = previous.height + level_data.height_diff.min;
-                        int height_max = previous.height + level_data.height_diff.max;
-                        height_min = Mathf.Clamp(height_min, HEIGHT_MIN, HEIGHT_MAX);
-                        height_max = Mathf.Clamp(height_max, HEIGHT_MIN, HEIGHT_MAX);
-                        // 바닥 높이의 최솟값~최댓값 사이의 임의의 값.
-                        current.height = Random.Range(height_min, height_max);
-                    }
-                    break;
-            }
+            return;
         }
 
+        LevelData level_data;
+        level_data = level_datas[level];
+
+        update_block_info(level_data);
+        update_monster_info(level_data);
+        update_item_info(level_data);
     }
+
     public void update(float passage_time)
-    { // *Update()가 아님. create_floor_block() 메서드에서 호출
-        this.current_block.current_count++; // 이번에 만든 블록 개수를 증가.
-                                            // 이번에 만든 블록 개수가 max_count 이상이면.
-        if (this.current_block.current_count >= this.current_block.max_count)
+    { 
+        if (this.current_block.current_count >= this.current_block.max_sequnce_count)
         {
             this.previous_block = this.current_block;
             this.current_block = this.next_block;
+            
             this.clear_next_block(ref this.next_block); // 다음에 만들 블록의 내용을 초기화.
-            this.update_level(ref this.next_block, this.current_block, passage_time); // 다음에 만들 블록을 설정.
+            this.update_level(passage_time); // 다음에 만들 블록을 설정.
         }
+
+        if(this.current_item.current_count >= current_item.max_sequnce_count)
+        {
+            previous_item = current_item;
+            current_item = next_item;
+
+            clear_item_info(ref next_item);
+        }
+
+        if(this.current_monster.current_count >= 1)
+        {
+            current_monster.monster_type = MonsterType.None;
+        }
+
         this.block_count++; // 블록의 총 수를 증가.
     }
 
@@ -201,6 +288,7 @@ public class LevelControl
                     case 9: level_data.height_diff.max = int.Parse(word); break;
                     case 10: level_data.coin_count.min = int.Parse(word); break;
                     case 11: level_data.coin_count.max = int.Parse(word); break;
+                    case 12: level_data.monster_spawn_rate = int.Parse(word); break;
                 }
                 n++;
             }
