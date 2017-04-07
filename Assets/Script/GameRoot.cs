@@ -9,6 +9,7 @@ public class GameRoot : MonoBehaviour {
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerControl>();
+        SoundManager.Instance.PlayMusic("bgm1", false);
     }
 
     void Update()

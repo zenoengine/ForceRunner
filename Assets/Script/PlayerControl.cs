@@ -17,7 +17,7 @@ public class PlayerControl : MonoBehaviour
         do
         {
             Vector3 s = this.transform.position; // Player의 현재 위치.
-            Vector3 e = s + Vector3.down * 3.0f; // s부터 아래로 1.0f로 이동한 위치.
+            Vector3 e = s + Vector3.down * 1.0f; // s부터 아래로 1.0f로 이동한 위치.
             RaycastHit hit;
             if (!Physics.Linecast(s, e, out hit))
             { // s부터 e 사이에 아무것도 없을 때.
@@ -26,7 +26,7 @@ public class PlayerControl : MonoBehaviour
             // s부터 e 사이에 뭔가 있을 때 아래의 처리가 실행.
             if (this.step == STEP.JUMP)
             { // 현재, 점프 상태라면.
-                if (this.step_timer < Time.deltaTime * 3.0f)
+                if (this.step_timer < Time.deltaTime * 2.5f)
                 { // 경과 시간이 3.0f 미만이라면.
                     break; // 아무것도 하지 않고 do~while 루프를 빠져나감(탈출구로).
                 }
@@ -78,6 +78,7 @@ public class PlayerControl : MonoBehaviour
                 if (this.transform.position.y < NARAKU_HEIGHT)
                 {
                     this.next_step = STEP.MISS; // '실패' 상태로 한다.
+                    SoundManager.Instance.PlaySound("r_jingle_fall", false);
                 }
                 break;
             case STEP.MISS:
@@ -107,20 +108,7 @@ public class PlayerControl : MonoBehaviour
         if (this.next_step == STEP.NONE)
         {
             switch (this.step)
-            { // Player
-                case STEP.RUN: // 달리는 중일
-                    if (!this.is_landed)
-                    {
-                        // 달리는 중이고 착지하지 않은 경우 아무것도 하지 않는다.
-                    }
-                    else
-                    {
-                        //if (Input.GetMouseButtonDown(0))
-                        {
-                         //   this.next_step = STEP.JUMP;
-                        }
-                    }
-                    break;
+            { 
                 case STEP.JUMP: // 점프 중일
                     if (this.is_landed)
                     {
@@ -176,12 +164,7 @@ public class PlayerControl : MonoBehaviour
                     else
                     {
                         this.next_step = STEP.JUMP;
-                    }
-                    break;
-                case STEP.JUMP: // 점프 중일
-                    if (this.is_landed)
-                    {
-                        this.next_step = STEP.RUN;
+                        SoundManager.Instance.PlaySound("r_se_jump", false);
                     }
                     break;
             }

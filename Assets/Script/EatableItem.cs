@@ -29,10 +29,13 @@ public class EatableItem : MonoBehaviour {
             if(this.tag.Contains("coin"))
             {
                 gameManager.AddScore(10);
+                SoundManager.Instance.PlaySound("r_se_coin_get", false);
             }
             else if(this.tag.Contains("force"))
             {
                 forceControl.AddForceItem(2);
+                SoundManager.Instance.PlaySound("r_se_coin_drop", false);
+
             }
 
             DestroyObject(this.gameObject);
