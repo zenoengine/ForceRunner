@@ -16,6 +16,7 @@ public class LevelData
     public Range spine_count; // 가시의 개수 범위
     public Range height_diff; // 발판의 높이 범위
     public Range coin_count;
+    public Range force_count;
     public int monster_spawn_rate;
     public LevelData()
     {
@@ -124,13 +125,29 @@ public class LevelControl
     {
         switch (previous_item.item_type)
         {
-            case ItemBlockType.Space: // 이전 블록이 바닥인 경우.
+            case ItemBlockType.Space:
                 {
-                    next_item.item_type = ItemBlockType.Coin;
-                    next_item.max_sequnce_count = Random.Range(level_data.coin_count.min, level_data.coin_count.max); // 바닥 길이의 최솟값~최댓값 사이의 임의의 값.
+                    //HACK : spine_floor is generated with 50% probability.
+                    int randomIdx = Random.Range(0, 2);
+                    switch (randomIdx)
+                    {
+                        case 1:
+                            {
+                                next_item.item_type = ItemBlockType.Coin;
+                                next_item.max_sequnce_count = Random.Range(level_data.coin_count.min, level_data.coin_count.max); 
+                            }
+                            break;
+                        default:
+                            {
+                                next_item.item_type = ItemBlockType.Force;
+                                next_item.max_sequnce_count = Random.Range(level_data.force_count.min, level_data.force_count.max);
+                            }
+                            break;
+                    }
                 }
                 break;
-            case ItemBlockType.Coin: // 이전 블록이 구멍인 경우.
+            case ItemBlockType.Coin:
+            case ItemBlockType.Force:
                 {
                     next_item.item_type = ItemBlockType.Space;
                     next_item.max_sequnce_count = Random.Range(level_data.coin_count.min, level_data.coin_count.max); // 바닥 길이의 최솟값~최댓값 사이의 임의의 값.
@@ -288,11 +305,13 @@ public class LevelControl
                     case 9: level_data.height_diff.max = int.Parse(word); break;
                     case 10: level_data.coin_count.min = int.Parse(word); break;
                     case 11: level_data.coin_count.max = int.Parse(word); break;
-                    case 12: level_data.monster_spawn_rate = int.Parse(word); break;
+                    case 12: level_data.force_count.min = int.Parse(word); break;
+                    case 13: level_data.force_count.max = int.Parse(word); break;
+                    case 14: level_data.monster_spawn_rate = int.Parse(word); break;
                 }
                 n++;
             }
-            if (n >= 8)
+            if (n >= 14)
             { // 8항목(이상)이 제대로 처리되었다면.
               // List 구조의 level_datas에 level_data를 추가한다.
                 this.level_datas.Add(level_data);

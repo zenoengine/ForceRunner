@@ -14,5 +14,10 @@ public class GameRoot : MonoBehaviour {
         time = this.step_timer;
         return (time); // 호출한 곳에 경과 시간을 알려준다.
     }
+
+    public void ResetTime()
+    {
+        step_timer = 0;
+    }
     
 }

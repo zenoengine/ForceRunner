@@ -5,19 +5,30 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour {
 
-    public enum LEVEL
-    {
-        LEVEL_MAIN = 0,
-        LEVEL_GAME,
-        LEVEL_RESULT
-    }
-
+    int preScore = 0;
     public float score = 0;
-    public int top_score = 0;
-    public int collected_force = 0;
+    public delegate void OnChangeScore(float score);
+    public OnChangeScore onChangeScoreEvent;
 
     void Start()
     {
-        DontDestroyOnLoad(this);
     }
+
+    private void Update()
+    {
+        score += Time.deltaTime;
+
+        if(preScore < (int)score)
+        {
+            preScore = (int)score;
+            onChangeScoreEvent(score);
+        }
+    }
+
+    public void AddScore(int value)
+    {
+        score += value;
+        onChangeScoreEvent(score);
+    }
+
 }

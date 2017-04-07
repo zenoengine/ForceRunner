@@ -9,6 +9,7 @@ public class PlayerControl : MonoBehaviour
     public static float JUMP_HEIGHT_MAX = 3.0f; // 점프 높이
     public static float JUMP_KEY_RELEASE_REDUCE = 0.5f; // 점프 후의 감속도
     public static float NARAKU_HEIGHT = -5.0f;
+    public static float FLY_HEIGHT = 5.0f;
 
     private void check_landed() // 착지했는지 조사
     {
@@ -38,11 +39,12 @@ public class PlayerControl : MonoBehaviour
     
     public enum STEP
     {
-        NONE = -1, // 상태정보 없음
-        RUN = 0, // 달린다
-        JUMP, // 점프
-        MISS, // 실패
-        NUM, // 상태가
+        NONE = -1,
+        RUN = 0,
+        JUMP,
+        MISS,
+        FLY,
+        NUM,
     };
 
     public STEP step = STEP.NONE; // Player
@@ -84,6 +86,20 @@ public class PlayerControl : MonoBehaviour
                 if (velocity.x < 0.0f)
                 { // Player의 속도가 마이너스면.
                     velocity.x = 0.0f; // 0으로 한다.
+                }
+                break;
+            case STEP.FLY:
+                {
+                    velocity.y = 0;
+                    velocity.z = 0;
+                    velocity.x = 10;
+                    Vector3 flyPosition = this.transform.position;
+                    if(flyPosition.y <= FLY_HEIGHT)
+                    {
+                        flyPosition.y += Time.deltaTime*5;
+                    }
+                       
+                    this.transform.position = flyPosition;
                 }
                 break;
         }
@@ -170,5 +186,17 @@ public class PlayerControl : MonoBehaviour
                     break;
             }
         }
+    }
+    
+    public void OnStartSuperForce()
+    {
+        rb.useGravity = false;
+        next_step = STEP.FLY;
+    }
+
+    public void OnFinishSuperForce()
+    {
+        rb.useGravity = true;
+        step = STEP.RUN;
     }
 }

@@ -15,11 +15,15 @@ public class ForceControl : MonoBehaviour
         PUSHOUT,
         SUPER
     }
-
-
+    PlayerControl playerControl = null;
     public ForceState state = ForceState.NONE;
     private List<ForceObject> forceObjects = new List<ForceObject>();
     private Dictionary<string, ForceState> stringStateMap = new Dictionary<string, ForceState>();
+    private Dictionary<string, bool> tagSignMap = new Dictionary<string, bool>();
+    GameRoot gameRoot = null;
+
+    public delegate void OnChangeForceCount(int value);
+    public OnChangeForceCount onChangeForceCountEvent;
 
     public void AddObject(ForceObject obj)
     {
@@ -31,8 +35,8 @@ public class ForceControl : MonoBehaviour
     }
     public void SetForceState(string newState)
     {
-        ForceState value; 
-        if(!stringStateMap.TryGetValue(newState, out value))
+        ForceState value;
+        if (!stringStateMap.TryGetValue(newState, out value))
         {
             Debug.Log("Warning: SetForceState Function's parameter is wrong string.");
             return;
@@ -40,17 +44,46 @@ public class ForceControl : MonoBehaviour
         state = value;
     }
 
-    float power = 10;
+    int forceCount = 0;
+    static float MAX_SUPER_TIME = 10.0f;
+    float SuperForceTimer = MAX_SUPER_TIME;
 
     void Start()
     {
         stringStateMap.Add("none", ForceState.NONE);
         stringStateMap.Add("attract", ForceState.ATTRACT);
         stringStateMap.Add("pushout", ForceState.PUSHOUT);
+
+        tagSignMap.Add("coin", true);
+        tagSignMap.Add("force", true);
+        tagSignMap.Add("gumba", false);
+
+        playerControl = GetComponent<PlayerControl>();
+        gameRoot = GameObject.Find("GameRoot").GetComponent<GameRoot>();
+    }
+
+    public void AddForceItem(int value)
+    {
+        forceCount += value;
+        onChangeForceCountEvent((int)forceCount);
     }
 
     void Update()
     {
+        if (forceCount >= 100)
+        {
+            AddForceItem(-100);
+            state = ForceState.SUPER;
+            playerControl.OnStartSuperForce();
+        }
+
+        if(SuperForceTimer < 0)
+        {
+            state = ForceState.ATTRACT;
+            SuperForceTimer = MAX_SUPER_TIME;
+            playerControl.OnFinishSuperForce();
+        }
+
         int sign = 1;
         switch (state)
         {
@@ -67,6 +100,8 @@ public class ForceControl : MonoBehaviour
             case ForceState.SUPER:
                 {
                     sign = 1;
+                    SuperForceTimer -= Time.deltaTime;
+                    gameRoot.ResetTime();
                 }
                 break;
             default:
@@ -78,15 +113,22 @@ public class ForceControl : MonoBehaviour
 
         foreach (var obj in forceObjects)
         {
-            if(state == ForceState.SUPER)
+            if (state == ForceState.SUPER)
             {
-                if(obj.tag.Contains("good"))
+                if (obj.tag != null)
                 {
-                    sign = 1;
-                }
-                else if(obj.tag.Contains("bad"))
-                {
-                    sign = -1;
+                    bool value = false;
+                    if (tagSignMap.TryGetValue(obj.tag, out value))
+                    {
+                        if (value)
+                        {
+                            sign = 1;
+                        }
+                        else
+                        {
+                            sign = -1;
+                        }
+                    }
                 }
             }
 
