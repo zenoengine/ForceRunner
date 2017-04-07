@@ -6,7 +6,7 @@ public class PlayerControl : MonoBehaviour
     public static float ACCELERATION = 10.0f; // 가속도
     public static float SPEED_MIN = 4.0f; // 속도의 최솟값
     public static float SPEED_MAX = 8.0f; // 속도의 최댓값
-    public static float JUMP_HEIGHT_MAX = 5.0f; // 점프 높이
+    public static float JUMP_HEIGHT_MAX = 3.0f; // 점프 높이
     public static float JUMP_KEY_RELEASE_REDUCE = 0.5f; // 점프 후의 감속도
     public static float NARAKU_HEIGHT = -5.0f;
 
@@ -16,7 +16,7 @@ public class PlayerControl : MonoBehaviour
         do
         {
             Vector3 s = this.transform.position; // Player의 현재 위치.
-            Vector3 e = s + Vector3.down * 1.0f; // s부터 아래로 1.0f로 이동한 위치.
+            Vector3 e = s + Vector3.down * 3.0f; // s부터 아래로 1.0f로 이동한 위치.
             RaycastHit hit;
             if (!Physics.Linecast(s, e, out hit))
             { // s부터 e 사이에 아무것도 없을 때.
@@ -49,7 +49,7 @@ public class PlayerControl : MonoBehaviour
     public STEP next_step = STEP.NONE; // Player
     public float step_timer = 0.0f; // 경과 시간
     private bool is_landed = false; // 착지했는가
-    private bool is_colided = false; // 뭔가와 충돌했는가
+    //private bool is_colided = false; // 뭔가와 충돌했는가
     private bool is_key_released = false; // 버튼이 떨어졌는가
 
     Rigidbody rb = null;
@@ -99,9 +99,9 @@ public class PlayerControl : MonoBehaviour
                     }
                     else
                     {
-                        if (Input.GetMouseButtonDown(0))
+                        //if (Input.GetMouseButtonDown(0))
                         {
-                            this.next_step = STEP.JUMP;
+                         //   this.next_step = STEP.JUMP;
                         }
                     }
                     break;
@@ -143,33 +143,32 @@ public class PlayerControl : MonoBehaviour
                     velocity.x *= PlayerControl.SPEED_MAX / Mathf.Abs(rb.velocity.x);
                 }
                 break;
-            // (계속)
-            case STEP.JUMP: // 점프 중일
-                do
-                {
-                    // '버튼이 떨어진 순간
-                    if (!Input.GetMouseButtonUp(0))
-                    {
-                        break; // 아무것도 하지 않고 루프를 빠져나간다
-                    }
-                    // 이미 감속된 상태면
-
-                    if (this.is_key_released)
-                    {
-                        break; // 아무것도 하지 않고 루프를 빠져나간다
-                    }
-                    // 상하방향 속도가 0 이하면
-                    if (velocity.y <= 0.0f)
-                    {
-                        break; // 아무것도 하지 않고 루프를 빠져나간다
-                    }
-                    // 버튼이 떨어져 있고 상승 중이라면 감속 시작
-                    // 점프의 상승은 여기서
-                    velocity.y *= JUMP_KEY_RELEASE_REDUCE;
-                    this.is_key_released = true;
-                } while (false);
-                break;
         }
         rb.velocity = velocity;
+    }
+
+    public void Jump()
+    {
+        if (this.next_step == STEP.NONE)
+        {
+            switch (this.step)
+            {
+                case STEP.RUN: // 달리는 중일
+                    if (!this.is_landed)
+                    {
+                    }
+                    else
+                    {
+                        this.next_step = STEP.JUMP;
+                    }
+                    break;
+                case STEP.JUMP: // 점프 중일
+                    if (this.is_landed)
+                    {
+                        this.next_step = STEP.RUN;
+                    }
+                    break;
+            }
+        }
     }
 }

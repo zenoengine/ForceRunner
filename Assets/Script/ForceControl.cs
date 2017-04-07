@@ -12,19 +12,20 @@ public class ForceControl : MonoBehaviour
     {
         NONE = 0,
         ATTRACT,
-        PUSHOUT
+        PUSHOUT,
+        SUPER
     }
 
 
     public ForceState state = ForceState.NONE;
-    private List<GameObject> forceObjects = new List<GameObject>();
+    private List<ForceObject> forceObjects = new List<ForceObject>();
     private Dictionary<string, ForceState> stringStateMap = new Dictionary<string, ForceState>();
 
-    public void AddObject(GameObject obj)
+    public void AddObject(ForceObject obj)
     {
         forceObjects.Add(obj);
     }
-    public void RemoveObject(GameObject obj)
+    public void RemoveObject(ForceObject obj)
     {
         forceObjects.Remove(obj);
     }
@@ -63,6 +64,11 @@ public class ForceControl : MonoBehaviour
                     sign = -1;
                 }
                 break;
+            case ForceState.SUPER:
+                {
+                    sign = 1;
+                }
+                break;
             default:
                 {
                     sign = 0;
@@ -72,8 +78,20 @@ public class ForceControl : MonoBehaviour
 
         foreach (var obj in forceObjects)
         {
+            if(state == ForceState.SUPER)
+            {
+                if(obj.tag.Contains("good"))
+                {
+                    sign = 1;
+                }
+                else if(obj.tag.Contains("bad"))
+                {
+                    sign = -1;
+                }
+            }
+
             Vector3 dir = (gameObject.transform.position - obj.transform.position).normalized * sign;
-            obj.transform.Translate(dir * Time.deltaTime * power);
+            obj.Move(dir);
         }
     }
 }
