@@ -14,6 +14,11 @@ public class GameManager : MonoBehaviour {
     {
     }
 
+    public void OnDestroy()
+    {
+        PlayerPrefs.SetInt("score",(int)score);
+    }
+
     private void Update()
     {
         score += Time.deltaTime;

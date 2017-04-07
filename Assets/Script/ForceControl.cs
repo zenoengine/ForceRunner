@@ -25,25 +25,6 @@ public class ForceControl : MonoBehaviour
     public delegate void OnChangeForceCount(int value);
     public OnChangeForceCount onChangeForceCountEvent;
 
-    public void AddObject(ForceObject obj)
-    {
-        forceObjects.Add(obj);
-    }
-    public void RemoveObject(ForceObject obj)
-    {
-        forceObjects.Remove(obj);
-    }
-    public void SetForceState(string newState)
-    {
-        ForceState value;
-        if (!stringStateMap.TryGetValue(newState, out value))
-        {
-            Debug.Log("Warning: SetForceState Function's parameter is wrong string.");
-            return;
-        }
-        state = value;
-    }
-
     int forceCount = 0;
     static float MAX_SUPER_TIME = 10.0f;
     float SuperForceTimer = MAX_SUPER_TIME;
@@ -62,10 +43,9 @@ public class ForceControl : MonoBehaviour
         gameRoot = GameObject.Find("GameRoot").GetComponent<GameRoot>();
     }
 
-    public void AddForceItem(int value)
+    void OnDestroy()
     {
-        forceCount += value;
-        onChangeForceCountEvent((int)forceCount);
+        PlayerPrefs.SetInt("force", (int)forceCount);
     }
 
     void Update()
@@ -77,7 +57,7 @@ public class ForceControl : MonoBehaviour
             playerControl.OnStartSuperForce();
         }
 
-        if(SuperForceTimer < 0)
+        if (SuperForceTimer < 0)
         {
             state = ForceState.ATTRACT;
             SuperForceTimer = MAX_SUPER_TIME;
@@ -135,5 +115,30 @@ public class ForceControl : MonoBehaviour
             Vector3 dir = (gameObject.transform.position - obj.transform.position).normalized * sign;
             obj.Move(dir);
         }
+    }
+
+    public void AddObject(ForceObject obj)
+    {
+        forceObjects.Add(obj);
+    }
+    public void RemoveObject(ForceObject obj)
+    {
+        forceObjects.Remove(obj);
+    }
+    public void SetForceState(string newState)
+    {
+        ForceState value;
+        if (!stringStateMap.TryGetValue(newState, out value))
+        {
+            Debug.Log("Warning: SetForceState Function's parameter is wrong string.");
+            return;
+        }
+        state = value;
+    }
+
+    public void AddForceItem(int value)
+    {
+        forceCount += value;
+        onChangeForceCountEvent((int)forceCount);
     }
 }

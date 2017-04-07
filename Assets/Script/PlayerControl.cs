@@ -199,4 +199,16 @@ public class PlayerControl : MonoBehaviour
         rb.useGravity = true;
         step = STEP.RUN;
     }
+
+    public bool isPlayEnd() // 게임이 끝났는지 판정.
+    {
+        bool ret = false;
+        switch (this.step)
+        {
+            case STEP.MISS: // MISS 상태라면.
+                ret = true; // '죽었어요'(true)라고 알려줌.
+                break;
+        }
+        return (ret);
+    }
 }
