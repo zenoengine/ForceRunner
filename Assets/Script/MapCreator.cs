@@ -186,10 +186,16 @@ public class MapCreator : MonoBehaviour
     {
         bool ret = false;
         float left_limit = this.player.transform.position.x - BLOCK_WIDTH * ((float)BLOCK_NUM_IN_SCREEN / 2.0f);
+        float right_limit = player.transform.position.x + 2 * BLOCK_WIDTH * ((float)BLOCK_NUM_IN_SCREEN / 2.0f);
 
         if (game_object.transform.position.x < left_limit)
         {
             ret = true; // 반환값을 true(사라져도 좋다)로
+        }
+        
+        if(game_object.transform.position.x > right_limit)
+        {
+            return true;
         }
 
         return ret; // 판정 결과를 돌려줌
