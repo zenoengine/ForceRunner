@@ -9,8 +9,13 @@ public class Gumba : MonoBehaviour {
         SoundManager.Instance.PlaySound("r_se_cat", false);
 	}
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.name == "Player")
+        {
+            collision.gameObject.GetComponent<PlayerControl>();
+            collision.gameObject.SendMessage("OnCollsionEnterDeathObject");
+        }
+    }
 }

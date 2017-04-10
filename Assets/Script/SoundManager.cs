@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class SoundManager : MonoBehaviour
 {
-    AudioSource mCurrentMusicSource;
+    AudioSource mCurrentMusicSource = null;
     List<AudioSource> mSounds = new List<AudioSource>();
     public bool MuteSound = false;
 
@@ -28,8 +28,15 @@ public class SoundManager : MonoBehaviour
         {
             if (mInstance == null)
             {
+                if(GameObject.Find("SoundManager") == null)
+                {
+                    GameObject go = new GameObject("SoundManager");
+                    mInstance = go.AddComponent<SoundManager>();
+                }
+
                 mInstance = GameObject.Find("SoundManager").GetComponent<SoundManager>();
             }
+
             return mInstance;
         }
     }
@@ -73,6 +80,7 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
+
         mCurrentMusicName = musicName;
 
         StartCoroutine(PlayMusicAfterLoading(musicName, bPusable));
@@ -85,6 +93,8 @@ public class SoundManager : MonoBehaviour
             return;
         }
 
+        mCurrentMusicSource.Stop();
+        Destroy(mCurrentMusicSource.gameObject);
         mCurrentMusicSource = null;
     }
     #endregion

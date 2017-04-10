@@ -150,7 +150,7 @@ public class LevelControl
             case ItemBlockType.Force:
                 {
                     next_item.item_type = ItemBlockType.Space;
-                    next_item.max_sequnce_count = Random.Range(level_data.coin_count.min, level_data.coin_count.max); // 바닥 길이의 최솟값~최댓값 사이의 임의의 값.
+                    next_item.max_sequnce_count = Random.Range(10, 15); //HACK Item SPACE
                 }
                 break;
         }

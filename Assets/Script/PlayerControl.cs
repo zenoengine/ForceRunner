@@ -36,7 +36,7 @@ public class PlayerControl : MonoBehaviour
         } while (false);
         // 루프의 탈출구.
     }
-    
+
     public enum STEP
     {
         NONE = -1,
@@ -95,11 +95,11 @@ public class PlayerControl : MonoBehaviour
                     velocity.z = 0;
                     velocity.x = 10;
                     Vector3 flyPosition = this.transform.position;
-                    if(flyPosition.y <= FLY_HEIGHT)
+                    if (flyPosition.y <= FLY_HEIGHT)
                     {
-                        flyPosition.y += Time.deltaTime*5;
+                        flyPosition.y += Time.deltaTime * 5;
                     }
-                       
+
                     this.transform.position = flyPosition;
                 }
                 break;
@@ -108,7 +108,7 @@ public class PlayerControl : MonoBehaviour
         if (this.next_step == STEP.NONE)
         {
             switch (this.step)
-            { 
+            {
                 case STEP.JUMP: // 점프 중일
                     if (this.is_landed)
                     {
@@ -153,24 +153,21 @@ public class PlayerControl : MonoBehaviour
 
     public void Jump()
     {
-        if (this.next_step == STEP.NONE)
+        switch (this.step)
         {
-            switch (this.step)
-            {
-                case STEP.RUN: // 달리는 중일
-                    if (!this.is_landed)
-                    {
-                    }
-                    else
-                    {
-                        this.next_step = STEP.JUMP;
-                        SoundManager.Instance.PlaySound("r_se_jump", false);
-                    }
-                    break;
-            }
+            case STEP.RUN: // 달리는 중일
+                if (!this.is_landed)
+                {
+                }
+                else
+                {
+                    this.next_step = STEP.JUMP;
+                    SoundManager.Instance.PlaySound("r_se_jump", false);
+                }
+                break;
         }
     }
-    
+
     public void OnStartSuperForce()
     {
         rb.useGravity = false;
@@ -193,5 +190,11 @@ public class PlayerControl : MonoBehaviour
                 break;
         }
         return (ret);
+    }
+
+
+    public void OnCollsionEnterDeathObject()
+    {
+        this.step = STEP.MISS;
     }
 }

@@ -65,4 +65,13 @@ public class SpineFloor : MonoBehaviour
         Vector3 velocity = direction* speed * Time.deltaTime;
         transform.Translate(velocity);
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.name == "Player")
+        {
+            collision.gameObject.GetComponent<PlayerControl>();
+            collision.gameObject.SendMessage("OnCollsionEnterDeathObject");
+        }
+    }
 }

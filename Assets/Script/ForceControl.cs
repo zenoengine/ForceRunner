@@ -21,12 +21,14 @@ public class ForceControl : MonoBehaviour
     private Dictionary<string, ForceState> stringStateMap = new Dictionary<string, ForceState>();
     private Dictionary<string, bool> tagSignMap = new Dictionary<string, bool>();
     GameRoot gameRoot = null;
+    public ParticleSystem forceEffect = null;
 
     public delegate void OnChangeForceCount(int value);
     public OnChangeForceCount onChangeForceCountEvent;
 
     int forceCount = 0;
     static float MAX_SUPER_TIME = 10.0f;
+    static int SUPER_FORCE_COUNT = 70;
     float SuperForceTimer = MAX_SUPER_TIME;
 
     void Start()
@@ -50,9 +52,9 @@ public class ForceControl : MonoBehaviour
 
     void Update()
     {
-        if (forceCount >= 100)
+        if (forceCount >= SUPER_FORCE_COUNT)
         {
-            AddForceItem(-100);
+            AddForceItem(-SUPER_FORCE_COUNT);
             state = ForceState.SUPER;
             playerControl.OnStartSuperForce();
         }
@@ -62,6 +64,7 @@ public class ForceControl : MonoBehaviour
             state = ForceState.ATTRACT;
             SuperForceTimer = MAX_SUPER_TIME;
             playerControl.OnFinishSuperForce();
+            forceEffect.Stop();
         }
 
         int sign = 1;
@@ -82,6 +85,11 @@ public class ForceControl : MonoBehaviour
                     sign = 1;
                     SuperForceTimer -= Time.deltaTime;
                     gameRoot.ResetTime();
+
+                    if (!forceEffect.isPlaying)
+                    {
+                        forceEffect.Play();
+                    }
                 }
                 break;
             default:
